@@ -88,11 +88,16 @@ export class AuthService {
     });
 
     return {
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
+      success: true,
+      statusCode: 201,
+      message: 'Usuário autenticado com sucesso.',
+      data: {
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
       },
     };
   }
