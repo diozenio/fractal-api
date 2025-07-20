@@ -59,15 +59,20 @@ export class AuthService {
       throw new UnauthorizedException('E-mail ou senha inválidos.');
     }
 
-    // 3. Comparar a senha enviada com a do banco
+    // 3. Verifica se o usuário tem senha definida
+    if (!user.password) {
+      throw new UnauthorizedException('Usuário sem senha, use o login social.');
+    }
+
+    // 4. Comparar a senha enviada com a do banco
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
-    // 4. Se as senhas não baterem, lança um erro
+    // 5. Se as senhas não baterem, lança um erro
     if (!isPasswordMatch) {
       throw new UnauthorizedException('E-mail ou senha inválidos.');
     }
 
-    // 5. Cria uma sessão para o usuário
+    // 6. Cria uma sessão para o usuário
     return this._createSession(user);
   }
 
