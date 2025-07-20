@@ -6,8 +6,10 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import * as dayjs from 'dayjs';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -40,19 +42,8 @@ export class AuthService {
       },
     });
 
-    // 4. Gera um token JWT
-    const payload = { sub: user.id, email: user.email };
-    const token = await this.jwtService.signAsync(payload);
-
-    // 5. Retorna o token e os dados do usuário
-    return {
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    };
+    // 4. Cria uma sessão para o usuário
+    return this._createSession(user);
   }
 
   async login(loginDto: LoginDto) {
@@ -76,11 +67,26 @@ export class AuthService {
       throw new UnauthorizedException('E-mail ou senha inválidos.');
     }
 
-    // 5. Gerar o Token JWT
+    // 5. Cria uma sessão para o usuário
+    return this._createSession(user);
+  }
+
+  private async _createSession(user: User) {
+    // 1. Gerar o token JWT
     const payload = { sub: user.id, email: user.email };
     const token = await this.jwtService.signAsync(payload);
 
-    // 6. Retornar o token e os dados do usuário
+    const expiresAt = dayjs().add(30, 'days').toDate();
+
+    // 2. Criar uma sessão no banco de dados
+    await this.prisma.userSession.create({
+      data: {
+        userId: user.id,
+        token,
+        expiresAt,
+      },
+    });
+
     return {
       token,
       user: {
