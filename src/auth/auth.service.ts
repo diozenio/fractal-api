@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import {
   Injectable,
   UnauthorizedException,
@@ -9,6 +13,8 @@ import * as bcrypt from 'bcryptjs';
 import * as dayjs from 'dayjs';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
+import { GoogleAuthService } from './providers/google/google-auth.service';
 import { User } from '@prisma/client';
 
 @Injectable()
@@ -16,6 +22,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly googleAuthService: GoogleAuthService,
   ) {}
 
   async signup(signupDto: SignupDto) {
@@ -73,6 +80,40 @@ export class AuthService {
     }
 
     // 6. Cria uma sessão para o usuário
+    return this._createSession(user);
+  }
+
+  async googleLogin(googleLoginDto: GoogleLoginDto) {
+    const { code } = googleLoginDto;
+
+    // 1. Obtém os tokens do Google
+    const googleAccessToken =
+      await this.googleAuthService.getGoogleAccessToken(code);
+
+    // 2. Obtém as informações do usuário do Google
+    const googleUserInfo = await this.googleAuthService.getGoogleUserInfo(
+      googleAccessToken.access_token,
+    );
+
+    const { email, name, picture: avatar } = googleUserInfo;
+
+    // 3. Verifica se o usuário já existe
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    // 4. Se não existir, cria um novo usuário
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          name,
+          avatar,
+        },
+      });
+    }
+
+    // 3. Cria uma sessão para o usuário
     return this._createSession(user);
   }
 
