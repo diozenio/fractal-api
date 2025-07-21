@@ -9,6 +9,8 @@ import * as bcrypt from 'bcryptjs';
 import * as dayjs from 'dayjs';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
+import { GoogleAuthService } from './providers/google/google-auth.service';
 import { User } from '@prisma/client';
 
 @Injectable()
@@ -16,6 +18,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly googleAuthService: GoogleAuthService,
   ) {}
 
   async signup(signupDto: SignupDto) {
@@ -59,15 +62,51 @@ export class AuthService {
       throw new UnauthorizedException('E-mail ou senha inválidos.');
     }
 
-    // 3. Comparar a senha enviada com a do banco
+    // 3. Verifica se o usuário tem senha definida
+    if (!user.password) {
+      throw new UnauthorizedException('Usuário sem senha, use o login social.');
+    }
+
+    // 4. Comparar a senha enviada com a do banco
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
-    // 4. Se as senhas não baterem, lança um erro
+    // 5. Se as senhas não baterem, lança um erro
     if (!isPasswordMatch) {
       throw new UnauthorizedException('E-mail ou senha inválidos.');
     }
 
-    // 5. Cria uma sessão para o usuário
+    // 6. Cria uma sessão para o usuário
+    return this._createSession(user);
+  }
+
+  async googleLogin(googleLoginDto: GoogleLoginDto) {
+    const { code } = googleLoginDto;
+
+    // 1. Obtém os tokens do Google
+    const { access_token } =
+      await this.googleAuthService.getAuthGoogleAccessToken(code);
+
+    // 2. Obtém as informações do usuário do Google
+    const { name, email, avatar } =
+      await this.googleAuthService.getAuthGoogleUserInfo(access_token);
+
+    // 3. Verifica se o usuário já existe
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    // 4. Se não existir, cria um novo usuário
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          name,
+          avatar,
+        },
+      });
+    }
+
+    // 3. Cria uma sessão para o usuário
     return this._createSession(user);
   }
 
