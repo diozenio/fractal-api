@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   GOOGLE_OAUTH_TOKEN_URL,
   GOOGLE_OAUTH_USERINFO_URL,
 } from 'src/constants/auth';
+import {
+  AuthGoogleAccessToken,
+  AuthGoogleUserInfo,
+} from 'src/core/domain/models/auth';
 
 @Injectable()
 export class GoogleAuthService {
@@ -13,7 +14,7 @@ export class GoogleAuthService {
   private readonly clientSecret = process.env.GOOGLE_CLIENT_SECRET!;
   private readonly redirectUri = process.env.GOOGLE_REDIRECT_URI!;
 
-  async getGoogleAccessToken(code: string) {
+  async getAuthGoogleAccessToken(code: string) {
     const params = new URLSearchParams({
       code,
       client_id: this.clientId,
@@ -32,11 +33,12 @@ export class GoogleAuthService {
       throw new InternalServerErrorException('Falha ao obter token do Google');
     }
 
-    const data = await response.json();
-    return data;
+    const { access_token } = (await response.json()) as AuthGoogleAccessToken;
+
+    return { access_token };
   }
 
-  async getGoogleUserInfo(accessToken: string) {
+  async getAuthGoogleUserInfo(accessToken: string) {
     const response = await fetch(GOOGLE_OAUTH_USERINFO_URL, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -47,7 +49,12 @@ export class GoogleAuthService {
       );
     }
 
-    const data = await response.json();
-    return data;
+    const {
+      name,
+      email,
+      picture: avatar,
+    } = (await response.json()) as AuthGoogleUserInfo;
+
+    return { name, email, avatar };
   }
 }

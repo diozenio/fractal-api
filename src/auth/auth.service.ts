@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
 import {
   Injectable,
   UnauthorizedException,
@@ -87,15 +83,12 @@ export class AuthService {
     const { code } = googleLoginDto;
 
     // 1. Obtém os tokens do Google
-    const googleAccessToken =
-      await this.googleAuthService.getGoogleAccessToken(code);
+    const { access_token } =
+      await this.googleAuthService.getAuthGoogleAccessToken(code);
 
     // 2. Obtém as informações do usuário do Google
-    const googleUserInfo = await this.googleAuthService.getGoogleUserInfo(
-      googleAccessToken.access_token,
-    );
-
-    const { email, name, picture: avatar } = googleUserInfo;
+    const { name, email, avatar } =
+      await this.googleAuthService.getAuthGoogleUserInfo(access_token);
 
     // 3. Verifica se o usuário já existe
     let user = await this.prisma.user.findUnique({
