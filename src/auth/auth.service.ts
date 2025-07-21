@@ -71,6 +71,16 @@ export class AuthService {
     return this._createSession(user);
   }
 
+  async logout(token: string) {
+    await this.prisma.userSession.deleteMany({
+      where: {
+        token,
+      },
+    });
+
+    return;
+  }
+
   private async _createSession(user: User) {
     // 1. Gerar o token JWT
     const payload = { sub: user.id, email: user.email };
