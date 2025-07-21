@@ -25,8 +25,6 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromCookie(request);
 
-    console.log('Token from cookie:', token);
-
     if (!token) {
       throw new UnauthorizedException('Token não encontrado.');
     }
@@ -68,7 +66,6 @@ export class JwtAuthGuard implements CanActivate {
   private extractTokenFromCookie(request: Request): string | undefined {
     const cookieName =
       this.configService.get<string>('JWT_COOKIE_NAME') || 'session_token';
-    console.log('Cookies:', request.cookies);
     const token = request.cookies?.[cookieName];
     return token;
   }
