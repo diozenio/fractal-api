@@ -16,7 +16,7 @@ export class CreateTaskDto {
   status?: TaskStatus;
 
   @IsOptional()
-  @IsEnum({
+  @IsEnum(TaskPriority, {
     message:
       'A prioridade da tarefa deve ser uma das seguintes: LOW, MEDIUM, HIGH, URGENT.',
   })
