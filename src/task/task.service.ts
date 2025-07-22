@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { User } from 'src/core/domain/models/auth';
@@ -46,7 +46,12 @@ export class TaskService {
       where: { id, userId },
     });
 
-    // 2. Retorna a tarefa encontrada
+    // 2. Verifica se a tarefa foi encontrada
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    // 3. Retorna a tarefa encontrada
     return task;
   }
 
@@ -93,7 +98,12 @@ export class TaskService {
       },
     });
 
-    // 2. Retorna a tarefa atualizada
+    // 2. Verifica se a tarefa foi encontrada
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    // 3. Retorna a tarefa atualizada
     return task;
   }
 
@@ -106,7 +116,12 @@ export class TaskService {
       where: { id, userId },
     });
 
-    // 2. Retorna uma confirmação de exclusão
+    // 2. Verifica se a tarefa foi encontrada
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    // 3. Retorna uma confirmação de exclusão
     return task;
   }
 }
