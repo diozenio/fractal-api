@@ -1,3 +1,13 @@
+export type User = {
+  id: string;
+  email: string;
+  name?: string;
+  password?: string;
+  avatar?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type AuthGoogleAccessToken = {
   access_token: string;
   expires_in: number;
