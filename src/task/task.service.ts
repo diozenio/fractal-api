@@ -13,16 +13,8 @@ export class TaskService {
 
     // 1. Busca as tarefas do usuário no banco de dados
     const tasks = await this.prisma.task.findMany({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        createdAt: true,
-        updatedAt: true,
-      },
       where: { userId: id },
+      omit: { userId: true },
     });
 
     // 2. Retorna as tarefas encontradas
@@ -34,16 +26,8 @@ export class TaskService {
 
     // 1. Busca a tarefa pelo ID e usuário no banco de dados
     const task = await this.prisma.task.findUnique({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        createdAt: true,
-        updatedAt: true,
-      },
       where: { id, userId },
+      omit: { userId: true },
     });
 
     // 2. Verifica se a tarefa foi encontrada
@@ -61,15 +45,6 @@ export class TaskService {
 
     // 1. Cria a tarefa no banco de dados
     const task = await this.prisma.task.create({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        status: true,
-        priority: true,
-        createdAt: true,
-        updatedAt: true,
-      },
       data: {
         title,
         description,
@@ -77,6 +52,7 @@ export class TaskService {
         priority,
         userId: id,
       },
+      omit: { userId: true },
     });
 
     // 2. Retorna a tarefa criada
@@ -89,13 +65,14 @@ export class TaskService {
 
     // 1. Atualiza a tarefa no banco de dados
     const task = await this.prisma.task.update({
-      where: { id, userId },
       data: {
         title,
         description,
         status,
         priority,
       },
+      where: { id, userId },
+      omit: { userId: true },
     });
 
     // 2. Verifica se a tarefa foi encontrada
