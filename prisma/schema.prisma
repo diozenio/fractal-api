@@ -22,9 +22,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relacionamentos futuros podem ser adicionados aqui
-  // tasks     Task[]
   UserSession UserSession[]
+  Tasks       Task[]
 }
 
 model UserSession {
@@ -35,4 +34,33 @@ model UserSession {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
+}
+
+enum TaskStatus {
+  PLANNED
+  TO_DO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus?   @default(PLANNED)
+  priority    TaskPriority? @default(MEDIUM)
+  dueDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }
