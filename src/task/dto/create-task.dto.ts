@@ -1,5 +1,6 @@
 import { IsDateString, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { TaskStatus, TaskPriority } from 'src/core/domain/models/task';
+import { IsDueDateInFuture } from '../decorators/is-duedate-in-future';
 
 export class CreateTaskDto {
   @IsNotEmpty({ message: 'O título da tarefa é obrigatório.' })
@@ -27,5 +28,6 @@ export class CreateTaskDto {
     {},
     { message: 'A data de vencimento deve ser uma data válida.' },
   )
+  @IsDueDateInFuture()
   dueDate?: string;
 }
