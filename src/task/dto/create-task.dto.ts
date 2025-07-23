@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { TaskStatus, TaskPriority } from 'src/core/domain/models/task';
 
 export class CreateTaskDto {
@@ -21,4 +21,11 @@ export class CreateTaskDto {
       'A prioridade da tarefa deve ser uma das seguintes: LOW, MEDIUM, HIGH, URGENT.',
   })
   priority?: TaskPriority;
+
+  @IsOptional()
+  @IsDateString(
+    {},
+    { message: 'A data de vencimento deve ser uma data válida.' },
+  )
+  dueDate?: string;
 }

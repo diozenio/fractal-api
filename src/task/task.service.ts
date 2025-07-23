@@ -40,7 +40,7 @@ export class TaskService {
   }
 
   async create(createTaskDto: CreateTaskDto, user: User) {
-    const { title, description, status, priority } = createTaskDto;
+    const { title, description, status, priority, dueDate } = createTaskDto;
     const { id } = user;
 
     // 1. Cria a tarefa no banco de dados
@@ -50,6 +50,7 @@ export class TaskService {
         description,
         status,
         priority,
+        dueDate,
         userId: id,
       },
       omit: { userId: true },
@@ -60,7 +61,7 @@ export class TaskService {
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto, user: User) {
-    const { title, description, status, priority } = updateTaskDto;
+    const { title, description, status, priority, dueDate } = updateTaskDto;
     const { id: userId } = user;
 
     // 1. Atualiza a tarefa no banco de dados
@@ -70,6 +71,7 @@ export class TaskService {
         description,
         status,
         priority,
+        dueDate,
       },
       where: { id, userId },
       omit: { userId: true },
