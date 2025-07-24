@@ -14,6 +14,14 @@ export class TaskService {
     // 1. Busca as tarefas do usuário no banco de dados
     const tasks = await this.prisma.task.findMany({
       where: { userId: id },
+      include: {
+        subtasks: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
       omit: { userId: true, updatedAt: true },
     });
 
@@ -27,6 +35,9 @@ export class TaskService {
     // 1. Busca a tarefa pelo ID e usuário no banco de dados
     const task = await this.prisma.task.findUnique({
       where: { id, userId },
+      include: {
+        subtasks: true,
+      },
       omit: { userId: true, updatedAt: true },
     });
 
@@ -40,7 +51,8 @@ export class TaskService {
   }
 
   async create(createTaskDto: CreateTaskDto, user: User) {
-    const { title, description, status, priority, dueDate } = createTaskDto;
+    const { title, description, status, priority, dueDate, parentId } =
+      createTaskDto;
     const { id } = user;
 
     // 1. Cria a tarefa no banco de dados
@@ -50,6 +62,7 @@ export class TaskService {
         description,
         status,
         priority,
+        parentId,
         dueDate,
         userId: id,
       },

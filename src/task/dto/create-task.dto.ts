@@ -30,4 +30,8 @@ export class CreateTaskDto {
   )
   @IsDueDateInFuture()
   dueDate?: string;
+
+  @IsOptional()
+  @IsNotEmpty({ message: 'O ID do pai da tarefa não pode ser vazio.' })
+  parentId?: string;
 }

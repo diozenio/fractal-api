@@ -58,6 +58,9 @@ model Task {
   status      TaskStatus?   @default(PLANNED)
   priority    TaskPriority? @default(MEDIUM)
   dueDate     DateTime?
+  parentId    String?
+  parent      Task?         @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]        @relation("Subtasks")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
