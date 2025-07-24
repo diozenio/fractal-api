@@ -91,8 +91,8 @@ export class TaskService {
 
     // 1. Deleta a tarefa do banco de dados
     const task = await this.prisma.task.delete({
-      select: { id: true },
       where: { id, userId },
+      omit: { userId: true },
     });
 
     // 2. Verifica se a tarefa foi encontrada
