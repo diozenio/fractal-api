@@ -21,35 +21,97 @@ export class TaskController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  fetch(@CurrentUser() user: User) {
-    return this.taskService.fetch(user);
+  async fetch(@CurrentUser() user: User) {
+    const tasks = await this.taskService.fetch(user);
+
+    return {
+      success: true,
+      statusCode: 200,
+      data: tasks,
+      message: 'Tarefas carregadas com sucesso.',
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  fetchById(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.taskService.fetchById(id, user);
+  async fetchById(@Param('id') id: string, @CurrentUser() user: User) {
+    const task = await this.taskService.fetchById(id, user);
+
+    if (!task) {
+      return {
+        success: false,
+        statusCode: 404,
+        message: 'Tarefa não encontrada.',
+      };
+    }
+
+    return {
+      success: true,
+      statusCode: 200,
+      data: task,
+      message: 'Tarefa encontrada com sucesso.',
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createTaskDto: CreateTaskDto, @CurrentUser() user: User) {
-    return this.taskService.create(createTaskDto, user);
+  async create(
+    @Body() createTaskDto: CreateTaskDto,
+    @CurrentUser() user: User,
+  ) {
+    const task = await this.taskService.create(createTaskDto, user);
+
+    return {
+      success: true,
+      statusCode: 201,
+      data: task,
+      message: 'Tarefa criada com sucesso.',
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
     @CurrentUser() user: User,
   ) {
-    return this.taskService.update(id, updateTaskDto, user);
+    const task = await this.taskService.update(id, updateTaskDto, user);
+
+    if (!task) {
+      return {
+        success: false,
+        statusCode: 404,
+        message: 'Tarefa não encontrada.',
+      };
+    }
+
+    return {
+      success: true,
+      statusCode: 200,
+      data: task,
+      message: 'Tarefa atualizada com sucesso.',
+    };
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  delete(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.taskService.delete(id, user);
+  async delete(@Param('id') id: string, @CurrentUser() user: User) {
+    const task = await this.taskService.delete(id, user);
+
+    if (!task) {
+      return {
+        success: false,
+        statusCode: 404,
+        message: 'Tarefa não encontrada.',
+      };
+    }
+
+    return {
+      success: true,
+      statusCode: 200,
+      data: null,
+      message: 'Tarefa deletada com sucesso.',
+    };
   }
 }
