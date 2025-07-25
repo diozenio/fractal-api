@@ -12,13 +12,16 @@ import { SignupDto } from './dto/signup.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { GoogleAuthService } from './providers/google/google-auth.service';
 import { User } from '@prisma/client';
-
+import { RedisService } from 'src/redis/redis.service';
 @Injectable()
 export class AuthService {
+  private readonly REDIS_SESSION_PREFIX = 'user_session:';
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly googleAuthService: GoogleAuthService,
+    private readonly redisService: RedisService,
   ) {}
 
   async signup(signupDto: SignupDto) {
@@ -117,6 +120,9 @@ export class AuthService {
       },
     });
 
+    const redisKey = `${this.REDIS_SESSION_PREFIX}${token}`;
+    await this.redisService.del(redisKey);
+
     return;
   }
 
@@ -128,13 +134,28 @@ export class AuthService {
     const expiresAt = dayjs().add(30, 'days').toDate();
 
     // 2. Criar uma sessão no banco de dados
-    await this.prisma.userSession.create({
+    const newUserSession = await this.prisma.userSession.create({
       data: {
         userId: user.id,
         token,
         expiresAt,
       },
     });
+
+    // 3. Cache da sessão no Redis
+    const redisKey = `${this.REDIS_SESSION_PREFIX}${token}`;
+    const expiresInSeconds = Math.ceil(
+      (expiresAt.getTime() - Date.now()) / 1000,
+    );
+
+    if (expiresInSeconds > 0) {
+      await this.redisService.set(
+        redisKey,
+        JSON.stringify(newUserSession),
+        'EX',
+        expiresInSeconds,
+      );
+    }
 
     return {
       success: true,
