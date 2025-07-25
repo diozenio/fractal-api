@@ -15,8 +15,21 @@ services:
     networks:
       - fractal-net
 
+  redis:
+    image: bitnami/redis:latest
+    container_name: fractal-redis
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - fractal-net
+
 volumes:
   postgres-data:
+  redis-data:
 
 networks:
   fractal-net:
